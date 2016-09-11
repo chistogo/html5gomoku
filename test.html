@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Gomoku</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+		<!--  Font Awesome-->
+		<link rel="stylesheet" href="css/font-awesome.min.css">
+		<!-- Site's CSS -->
+		<link rel="stylesheet" href="css/main.css" charset="utf-8">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+  <body>
+
+
+<i class="fa fa-circle traslateMeRight" style="font-size:10em"aria-hidden="true"></i>
+<i class="fa fa-circle-o traslateMeLeft" style="font-size:10em"aria-hidden="true"></i>
+<!-- <i class="fa fa-circle-o" style="font-size:10em" aria-hidden="true"></i> -->
+		<div class="" id="game-area">
+
+      <div class="">
+        <h1  id="welcome1" class="text-center welcome" style="font-size:5em">Welcome</h1>
+        <h2  id="welcome2" class="text-center  welcome">To the Greatest Gomoku Experience on the Internet</h2><br>
+        <button type="button" class="btn btn-default btn-lg center-block play-game-button" id="playbutton1">Experience Solo</button><br>
+        <button type="button" class="btn btn-default btn-lg center-block play-game-button" id="playbutton2">Experience with Friend Locally</button><br>
+        <!-- <button type="button" class="btn btn-default btn-lg center-block play-game-button" id="playbutton3">Experience with Friend over the Internet</button> -->
+      </div>
+
+    </div>
+
+
+
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <audio autoplay="true" src="music.mp3">
+  </body>
+</html>
+
+<script type="text/javascript">
+// Implement the Game Logic with the UI
+  DRAW_VALUE = 15*15;
+  currentTurnCount = 0;
+
+$( ".traslateMeRight" ).animate({
+
+    left: "+="+$( window ).width()/2,
+    top: "+="+$( window ).height()*2/3
+  }, 3000, function() {
+    // Animation complete.
+  });
+
+  //menu animations
+  $( ".traslateMeLeft" ).animate({
+
+      left: "-="+$( window ).width()/2,
+      top: "+="+$( window ).height()*2/3
+    }, 3000, function() {
+      $('#playbutton1').css('visibility','visible').hide().fadeIn(500,function(){
+        $('#playbutton2').css('visibility','visible').hide().fadeIn(500,function(){
+          $('#playbutton3').css('visibility','visible').hide().fadeIn(500,function(){
+           //sTUFF
+          });
+        });
+      });
+      //Create a click lissener for the game button classes
+      $(".play-game-button").click(playTheGame);
+
+
+
+
+      //Start the game
+      function playTheGame(){
+
+        gameMode = $(this).attr('id');
+        $("#game-area").addClass('game-area');
+        $(".traslateMeLeft").hide(500);
+        $(".traslateMeRight").hide(500);
+
+        //Create the game board
+        var board = "<table style='height:90%'>";
+        for (var i = 0; i < 15; i++) {
+          board += "<tr>"
+          for (var j = 0; j < 15; j++) {
+            board += '<td id="'+j+':'+i+'" class="text-center game-cell" style="width:'+(1/15)  +'%"><i class="fa fa-circle" style="font-size:2em; visibility: hidden;"aria-hidden="true"></i></td>';
+          }
+          board += "</tr>"
+        }
+        board += "</table>"
+
+        //Display the board
+        document.getElementById("game-area").innerHTML = board;
+
+        //Initantiate a gomoku object to use for the game logic
+        game = new gomoku();
+        //Hover Handler
+        $(".game-cell").hover(function(){
+          if(!$(this).hasClass("placed")){
+
+           if(game.turn == 'b'){
+             $(this).html('<i class="fa fa-circle" style="font-size:2em"aria-hidden="true"></i>');
+           }else{
+              $(this).html('<i class="fa fa-circle-o" style="font-size:2em"aria-hidden="true"></i>');
+           }
+         }
+         } , function(){
+          if(!$(this).hasClass("placed")){
+            $(this).html('<i class="fa fa-circle" style="font-size:2em; visibility: hidden;"aria-hidden="true"></i>');
+          }
+         });
+
+        //Click Hanler
+        $( ".game-cell" ).click(function() {
+          var pos = $(this).attr('id').split(":");
+
+
+
+          //Game Logic for 2 player local
+          if(game.addMove(pos[0],pos[1],game.turn)){
+            currentTurnCount++;
+            $(this).addClass('placed');
+            if(game.turn == 'b'){
+              $(this).html('<i class="fa fa-circle" style="font-size:2em;"aria-hidden="true"></i>');
+            }else{
+              $(this).html('<i class="fa fa-circle-o" style="font-size:2em;"aria-hidden="true"></i>');
+            }
+
+
+
+
+
+            if(game.checkWin(pos[0],pos[1],game.turn).win){
+              if(game.turn == 'w'){
+                alert("White Player is Winner");
+                $("#game-area").hide(5000);
+                $("#game-area").hide(5000,function(){
+                  $("#game-area").html('<button type="button" class="btn btn-default btn-lg center-block play-game-button" id="'+gameMode+'">Play Again?</button>');
+                  $("#"+gameMode).css('visibility','visible');
+                  $("#game-area").show();
+                  $( "#"+gameMode ).click(playTheGame);
+
+                });
+              }else{
+                alert("Black Player is Winner");
+                $("#game-area").hide(5000);
+                $("#game-area").hide(5000,function(){
+                  $("#game-area").html('<button type="button" class="btn btn-default btn-lg center-block play-game-button" id="'+gameMode+'">Play Again?</button>');
+                  $("#"+gameMode).css('visibility','visible');
+                  $("#game-area").show();
+                  $( "#"+gameMode ).click(playTheGame);
+
+                });
+
+              }
+            }
+
+            if(game.turn == 'w'){
+              game.turn = 'b'
+
+            }else{
+              game.turn = 'w'
+              if(gameMode == "playbutton1"){
+                currentTurnCount++;
+                game.turn = 'b'
+                var move = playMove(game);
+                $("#"+move.x+"\\:"+move.y).addClass('placed');
+                $("#"+move.x+"\\:"+move.y).html('<i class="fa fa-circle-o" style="font-size:2em;"aria-hidden="true"></i>');
+                game.addMove(move.x,move.y,"w")
+                if(game.checkWin(move.x,move.y,'w').win){
+                  alert("White Player is the Winner");
+                  $("#game-area").hide(5000,function(){
+                    $("#game-area").html('<button type="button" class="btn btn-default btn-lg center-block play-game-button" id="'+gameMode+'">Play Again?</button>');
+                    $("#"+gameMode).css('visibility','visible');
+                    $("#game-area").show();
+                    $( "#"+gameMode ).click(playTheGame);
+
+                  });
+                }
+
+                console.log(move);
+
+
+              }
+            }
+
+          }
+
+          //If the turn count is 15 * 15 and no one has won then DRAW
+          if(currentTurnCount == DRAW_VALUE){
+            alert("DRAW");
+            location.reload();
+          }
+
+        });
+
+
+
+
+
+      }
+
+    });
+
+
+   $('#welcome1').css('visibility','visible').hide().fadeIn(1500,function(){
+     $('#welcome2').css('visibility','visible').hide().fadeIn(2000,function(){
+      //sTUFF
+     });
+   });
+
+
+
+
+</script>
+
+
+
+<script type="text/javascript">
+// Contains all the core Game Logic
+
+//References
+//https://en.wikipedia.org/wiki/Gomoku    for rules of game
+//https://developer.mozilla.org/en-US/    for javascript documentation
+//www.w3schools.com/js/     for javascript	documentation
+
+	function gomoku () {
+
+		//Matrix representation of the World
+    this.turn = 'b';
+		this.world = new Array(15);
+		for (var i = 0; i < this.world.length; i++) {
+			this.world[i] = new Array(15);
+		}
+
+
+		//Function to output gameboard to JS Console
+    this.toString = function() {
+
+			for (var j = 0; j < this.world[0].length; j++) {
+				let temp = '';
+				for (var i = 0; i < this.world.length; i++) {
+					temp = temp + this.world[i][j] + " ";
+				}
+				console.log(temp);
+			}
+
+      };
+
+			//Function to try to make a move,
+			//Returns False if cant make move, Return True if move successful
+			this.addMove = function(x,y,peice){
+				//Find invalid Conditions
+				//Make sure the coordinates are within bounderies
+				if(x< this.world.length && x>=0 && y<this.world[0].length && y>=0){
+					//make sure peice is either x or o
+					if(peice == 'w' || peice == 'b'){
+							//Now testing to see if peice is already there
+							if(typeof(this.world[x][y]) == "undefined"){
+								this.world[x][y] = peice;
+								return true;
+							}
+					}
+
+				}
+				return false;
+			}
+
+			//Check Winning Conditons at New Coordinate
+			this.checkWin = function(x,y,color){
+
+
+        var jsonResponse = {"win":false, "h":0,"v":0,"fd":0,"bd":0}
+
+
+				//Check Horizontal
+				var score = 1;
+				//Check Right Side
+				for (var i = Number(x)+1; i < (x+5) && i < this.world.length; i++) {
+
+					if(this.world[i][y] == color){
+						score = score + 1;
+					}else{
+						break;
+					}
+				}
+
+
+				//Check Left Side do not check self this time
+				for (var i = Number(x)-1; i > (x-5) && i >= 0; i--) {
+					if(this.world[i][y] == color){
+						score = score + 1;
+					}else{
+						break;
+					}
+				}
+        jsonResponse.h = score;
+
+
+        //If you score 5 in a row you win!!!
+				if(score >= 5){
+          jsonResponse.win = true;
+					return jsonResponse;
+				}
+
+
+
+				//Check Vertical
+				score = 1;
+				//Check bottom Side
+				for (var j = Number(y)+1; j < (y+5) && j < this.world[x].length; j++) {
+					if(this.world[x][j] == color){
+						score = Number(score) + 1;
+					}else{
+						break;
+					}
+				}
+				//Check top Side do not check self this time
+				for (var j = y-1; j > (y-5) && j >= 0; j--) {
+					if(this.world[x][j] == color){
+						score = Number(score) + 1;
+					}else{
+						break;
+					}
+				}
+        //If you score 5 in a row you win!!!
+				jsonResponse.v = score;
+				if(score >= 5){
+          jsonResponse.win = true;
+					return jsonResponse;
+				}
+
+				//Check Diaginal
+
+				//Checking Diagnally to the right
+				score = 1;
+				var i = Number(x)+1;
+				var j = Number(y)+1;
+				while(i< x+5 && i<this.world.length && j< y+5 && j<this.world[x].length){
+
+					if(this.world[i][j] == color){
+						score = Number(score) + 1;
+					}else{
+						break;
+					}
+
+					i++;
+					j++;
+				}
+
+				//Checking Diagnally to the left
+				var i = x-1;
+				var j = y-1;
+				while(i> x-5 && i>=0 && j > y-5 && j>=0){
+
+					if(this.world[i][j] == color){
+						score = Number(score) + 1;
+					}else{
+						break;
+					}
+
+					i--;
+					j--;
+				}
+
+        //If you score 5 in a row you win!!!
+				jsonResponse.bd = score;
+				if(score >= 5){
+          jsonResponse.win = true;
+					return jsonResponse;
+				}
+
+        //Checking Backward Diagnal
+        //
+
+        score = 1;
+        var i = Number(x) + 1;
+        var j = Number(y) - 1;
+        while(i< x+5 && i<this.world.length && j > (y - 5) && j >= 0){
+
+          if(this.world[i][j] == color){
+            score = Number(score) + 1;
+          }else{
+            break;
+          }
+
+          i++;
+          j--;
+        }
+
+        //Checking Diagnally to the left
+        var i = Number(x)-1;
+        var j = Number(y)+1;
+
+        while(i > x-5 && i>=0 && j < (y+5) && j<this.world[x].length){
+
+          if(this.world[i][j] == color){
+            score = score + 1;
+          }else{
+            break;
+          }
+
+          i--;
+          j++;
+        }
+
+        //If you score 5 in a row you win!!!
+        jsonResponse.fd = score;
+        if(score >= 5){
+          jsonResponse.win = true;
+					return jsonResponse;
+        }
+
+
+
+        //Printout to console to JSON response for debugging
+        console.log(jsonResponse);
+				//nothing found
+				return jsonResponse;
+			}
+
+	}
+
+</script>
+
+<script type="text/javascript">
+/*Ai
+Design: The AI will play as white player. It will look through the black peice
+and see if the black player has the potential to make a 4th score. It will block
+that move. If it does not find such peice it will maximize it score in random
+direction.
+\
+*/
+
+//Get all black peices.
+
+
+function playMove(gameObj){
+  //Parse for 3 in a row.
+
+  var maxScore = 0;
+  var maxSum = 0;
+  var maxDanger = {sum:0};
+
+  var possibleMoves =[];
+  for (var j = 0; j < gameObj.world[0].length; j++) {
+    for (var i = 0; i < gameObj.world.length; i++) {
+
+      if(typeof(gameObj.world[i][j]) == "undefined"){
+
+        //Blocks Game Ending Moves
+        respose = gameObj.checkWin(i,j,'b');
+        console.log(respose);
+        if(Math.max(respose.h,respose.v,respose.fd,respose.bd) > 3){
+//{"x":i,"y":j,"sum":Math.max(respose.h,respose.v,respose.fd,respose.bd)}
+          if(Math.max(respose.h,respose.v,respose.fd,respose.bd)>maxDanger.sum){
+            maxDanger = {"x":i,"y":j,"sum":Math.max(respose.h,respose.v,respose.fd,respose.bd)};
+          }
+        };
+
+        //Adding Possible Moves
+        resposeWhite = gameObj.checkWin(i,j,'w');
+        var score = Math.max(resposeWhite.h,resposeWhite.v,resposeWhite.fd,resposeWhite.bd)
+        var scoreSum = resposeWhite.h + resposeWhite.v + resposeWhite.fd + resposeWhite.bd - 4;
+
+        //Found winning move
+        if(score == 5){
+          return {"x":i,"y":j};
+        }
+
+        if(score > maxScore){
+          maxScore = score;
+        }
+
+
+
+        possibleMoves.push({"x":i,"y":j,"score":score,"sum":scoreSum});
+
+      }//end unplaced check
+
+    }
+  }//End Board Traversal
+
+  if(maxDanger.sum != 0){
+    return(maxDanger);
+  }
+
+
+//  console.log(possibleMoves);
+  var possibleMovesRound2 = [];
+  //Filter out ones with only max score
+  for (var i = 0; i < possibleMoves.length; i++) {
+    if(possibleMoves[i].score == maxScore){
+
+      if(possibleMoves[i].sum > maxSum){
+        maxSum = possibleMoves[i].sum;
+      }
+      possibleMovesRound2.push(possibleMoves[i]);
+    }
+  }
+
+  var possibleMovesRound3 = [];
+  //console.log(possibleMovesRound2);
+  for (var i = 0; i < possibleMovesRound2.length; i++) {
+    if(possibleMovesRound2[i].sum == maxSum){
+      possibleMovesRound3.push(possibleMovesRound2[i]);
+    }
+  }
+  //console.log(possibleMovesRound3);
+  var choose = possibleMovesRound3[Math.floor((Math.random() * possibleMovesRound3.length))];
+  //console.log(choose);
+  return {"x":choose.x,"y":choose.y};
+
+
+
+}
+
+
+
+
+</script>
